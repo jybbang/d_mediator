@@ -5,7 +5,7 @@ class Mediator {
   static final Mediator _mediator = Mediator._();
 
   final Map<Type, IRequestHandler> _handlers = <Type, IRequestHandler>{};
-  final Map<Type, INotificationHandler> _notifications =
+  final Map<Type, INotificationHandler> _notificationHandlers =
       <Type, INotificationHandler>{};
   IMediatorFilter? _filter;
 
@@ -28,7 +28,7 @@ class Mediator {
 
   Mediator addNotificationHandler<T extends INotification>(
       T request, INotificationHandler<T> handler) {
-    _notifications[request.runtimeType] = handler;
+    _notificationHandlers[request.runtimeType] = handler;
     return this;
   }
 
@@ -39,23 +39,25 @@ class Mediator {
     final handler = _handlers[request.runtimeType]! as IRequestHandler<T, R>;
 
     if (_filter == null) {
-      return CancelableOperation<R?>.fromFuture(handler.handle(request),
+      return CancelableOperation<R?>.fromFuture(handler.handleAsync(request),
           onCancel: () => throw OperationCancelledException());
     } else {
       return _filter!.filterNextAsync(request).then(
-          (canNext) =>
-              canNext == true ? handler.handle(request) : Future.value(null),
+          (canNext) => canNext == true
+              ? handler.handleAsync(request)
+              : Future.value(null),
           propagateCancel: true);
     }
   }
 
   CancelableOperation publishAsync<T extends INotification>(T request) {
-    if (!_notifications.containsKey(request.runtimeType))
+    if (!_notificationHandlers.containsKey(request.runtimeType))
       throw HandlerNotFoundException();
 
-    final handler = _notifications[request.runtimeType]!;
+    final handler =
+        _notificationHandlers[request.runtimeType]! as INotificationHandler<T>;
 
-    return CancelableOperation.fromFuture(handler.handle(request),
+    return CancelableOperation.fromFuture(handler.handleAsync(request),
         onCancel: () => throw OperationCancelledException());
   }
 }

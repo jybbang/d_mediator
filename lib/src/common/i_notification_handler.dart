@@ -1,3 +1,3 @@
 mixin INotificationHandler<T> {
-  Future handle(T request);
+  Future handleAsync(T request);
 }
