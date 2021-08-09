@@ -1,7 +1,7 @@
 name: d_mediator
 description: A mediator library inspired by MetiatR project.
 version: 0.0.1
-homepage: https://github.com/jybbang/d_mefiator
+homepage: https://github.com/jybbang/d_mediator
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
